@@ -28,7 +28,12 @@ export class WebRTCService {
     | ((userId: string, fileId: string, progress: number) => void)
     | null = null;
   private onReceiverProgressCallback:
-    | ((userId: string, fileId: string, progress: number) => void)
+    | ((
+        userId: string,
+        fileId: string,
+        received: number,
+        total: number,
+      ) => void)
     | null = null;
   private onConnectionStateChangeCallback:
     | ((userId: string, state: RTCPeerConnectionState) => void)
@@ -320,7 +325,8 @@ export class WebRTCService {
             this.onReceiverProgressCallback(
               userId,
               meta.id,
-              (meta.received / meta.size) * 100,
+              meta.received,
+              meta.size,
             );
           }
         }
@@ -349,15 +355,16 @@ export class WebRTCService {
     this.onDataChannelCallback = callback;
   }
 
-  onProgress(
-    type: "sender" | "receiver",
+  onReceiverProgress(
+    callback: (userId: string, fileId: string, received: number) => void,
+  ) {
+    this.onReceiverProgressCallback = callback;
+  }
+
+  onSenderProgress(
     callback: (userId: string, fileId: string, progress: number) => void,
   ) {
-    if (type === "sender") {
-      this.onSenderProgressCallback = callback;
-    } else {
-      this.onReceiverProgressCallback = callback;
-    }
+    this.onSenderProgressCallback = callback;
   }
 
   onConnectionStateChange(

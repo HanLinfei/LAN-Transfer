@@ -91,8 +91,8 @@ export function useFileTransfer() {
     socketService.on("accept", handleOfferAccept);
     socketService.on("reject", handleOfferReject);
 
-    // 注册监听器到WEBRTC中
-    webrtcService.onProgress("sender", (userId, fileId, progress) => {
+    webrtcService.onSenderProgress((userId, fileId, progress) => {
+      // Update Sender Progress
       const transfer = transfers.value.find(
         (t) => t.targetUserId === userId && t.fileId === fileId,
       );
@@ -104,16 +104,32 @@ export function useFileTransfer() {
       }
     });
 
-    // @ts-ignore: TS6133
-    webrtcService.onProgress("receiver", (userId, fileId, progress) => {
-      // 找到我接收的这个任务
+    webrtcService.onReceiverProgress((userId, fileId, received) => {
+      // Update Receiver Progress
       const incoming = incomingTransfers.value.find(
         (t) => t.senderId === userId && t.status === "receiving",
       );
 
       if (incoming) {
-        incoming.progress = progress;
-        if (progress >= 100) {
+        if (!(incoming as any).fileProgress) {
+          (incoming as any).fileProgress = new Map<string, number>();
+        }
+
+        (incoming as any).fileProgress.set(fileId, received);
+
+        let totalReceived = 0;
+        ((incoming as any).fileProgress as Map<string, number>).forEach(
+          (bytes) => {
+            totalReceived += bytes;
+          },
+        );
+
+        if (incoming.totalSize > 0) {
+          incoming.progress = (totalReceived / incoming.totalSize) * 100;
+        }
+
+        if (incoming.progress >= 100 || totalReceived >= incoming.totalSize) {
+          incoming.progress = 100;
           incoming.status = "completed";
         }
       }
