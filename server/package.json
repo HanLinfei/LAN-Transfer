@@ -1,0 +1,21 @@
+{
+  "name": "server",
+  "version": "1.0.50",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prebuild": "bun run scripts/update-client-env.js && bun run scripts/build-client.js",
+    "dev": "bun run --watch src/index.ts",
+    "openbrowser": "bun run scripts/start-broswer.js",
+    "build": "bun run prebuild && bun build src/index.ts --outdir=dist --target=bun",
+    "start": "NODE_ENV=production bun run scripts/start-broswer.js & bun run dist/index.js "
+  },
+  "dependencies": {
+    "@elysiajs/cors": "^1.4.1",
+    "@elysiajs/static": "^1.4.7",
+    "elysia": "latest"
+  },
+  "devDependencies": {
+    "bun-types": "latest"
+  },
+  "module": "src/index.js"
+}
