@@ -49,3 +49,6 @@ package-lock.json
 dist/
 public/assets/
 public/index.html
+
+# pro
+/lan
